@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Speech to Text PWA</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      text-align: center;
+    }
+    button {
+      font-size: 1.2rem;
+      margin: 0.5rem;
+      padding: 0.5rem 1.5rem;
+    }
+    #transcript {
+      margin-top: 1.5rem;
+      border: 1px solid #ddd;
+      padding: 1rem;
+      min-height: 4rem;
+      white-space: pre-wrap;
+      background: #f9f9f9;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Speech to Text</h1>
+  <button id="start-btn">Start</button>
+  <button id="stop-btn" disabled>Stop</button>
+  
+  <div id="transcript" aria-live="polite"></div>
+
+  <script>
+    // Check for browser support
+    window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!window.SpeechRecognition) {
+      alert('Sorry, your browser does not support Speech Recognition.');
+    } else {
+      const recognition = new window.SpeechRecognition();
+      recognition.interimResults = true;
+      recognition.continuous = true;
+      recognition.lang = 'en-US';
+
+      const startBtn = document.getElementById('start-btn');
+      const stopBtn = document.getElementById('stop-btn');
+      const transcriptDiv = document.getElementById('transcript');
+
+      let finalTranscript = '';
+
+      recognition.onresult = (event) => {
+        let interimTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + '\n';
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+
+        transcriptDiv.textContent = finalTranscript + interimTranscript;
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+      };
+
+      recognition.onend = () => {
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+      };
+
+      startBtn.onclick = () => {
+        recognition.start();
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+      };
+
+      stopBtn.onclick = () => {
+        recognition.stop();
+      };
+    }
+  </script>
+</body>
+</html>
